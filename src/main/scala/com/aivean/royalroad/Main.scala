@@ -7,21 +7,14 @@ import net.ruippeixotog.scalascraper.dsl.DSL
 
 object Main extends App {
 
-  val url = args.headOption match {
-    case Some(u) if u.matches("http://royalroadl.com/fiction/\\d+") => u
-    case _ => System.err.println(
-      """Provide exactly one program argument:
-        |url in format http://royalroadl.com/fiction/xxxx """.stripMargin)
-      System.exit(1)
-      ""
-  }
+  val cliArgs = new Args(args)
 
   import DSL.Extract._
   import DSL._
 
   val browser = new Browser
 
-  val doc = browser.get(url)
+  val doc = browser.get(cliArgs.fictionLink())
 
   val title = doc >> text("h1.fiction-title")
 
@@ -30,12 +23,29 @@ object Main extends App {
   val threads: Seq[String] =
     doc >> attrs("href")("div.chapters li.chapter a[href^=http://royalroadl.com/forum/showthread.php?tid]")
 
+  def parsingError(name: String, value: String, url: String): Nothing = {
+    throw new IllegalStateException(
+      s""" Can't find $name using css query: `$value`
+          | Probably it happened because RoyalRoad changed it's html structure.
+          | No worries!
+          | Check $url
+          | and specify correct css selector for $name as command line argument for this program.
+          | Check readme or run this program with --help parameter for details:
+          |   https://github.com/Aivean/royalroadl-downloader/blob/master/readme.md
+          | Css selectors reference: http://www.w3schools.com/cssref/css_selectors.asp
+      """.stripMargin)
+  }
+
   val chaps =
     threads.par.map(u => u -> browser.get(u)).map { case (u, doc) =>
       println("parsing: " + u)
 
-      s"""<h1>${doc >> text("div.largetext")}</h1>""" +
-        (doc >> element("div.post_body.postbit_body")).toString
+      <h1>
+        {(doc >?> text(cliArgs.titleQuery()))
+        .getOrElse(parsingError("chapter title", cliArgs.titleQuery(), u))}
+      </h1>.toString() +
+        (doc >?> element(cliArgs.bodyQuery()))
+          .getOrElse(parsingError("chapter text", cliArgs.bodyQuery(), u)).toString
     }.seq
 
   val filename = title.replaceAll("[^\\w\\d]+", "_") + ".html"
