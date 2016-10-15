@@ -21,11 +21,11 @@ class Args(args: Seq[String]) extends ScallopConf(args) {
 
   val titleQuery = opt[String](
     descr = "CSS selector for chapter title (text of the found element is used)",
-    default = Some("div.ccgtheadposttitle")
+    default = Some("title")
   )
   val bodyQuery = opt[String](
     descr = "CSS selector for chapter text body (the whole found element is used)",
-    default = Some("div.post_body")
+    default = Some("div.chapter-content")
   )
 
   val fictionLink = trailArg[String](required = true,

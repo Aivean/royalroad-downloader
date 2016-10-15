@@ -8,10 +8,9 @@ as html. Use something like [Calibre](http://calibre-ebook.com/) to convert html
 How to use
 ---
 
-* download [release .jar]
-(https://github.com/Aivean/royalroadl-downloader/releases/download/1.1/royalroadl-downloader-assembly-1.1.jar)
+* download [release .jar](https://github.com/Aivean/royalroadl-downloader/releases/download/1.2.0/royalroadl-downloader-assembly-1.2.0.jar)
 * install latest java (maybe you have one, check by executing `java -version`)
-* execute `java -jar royalroadl-downloader-assembly-1.1.jar http://royalroadl.com/fiction/xxxx`
+* execute `java -jar royalroadl-downloader-assembly-1.2.0.jar http://royalroadl.com/fiction/xxxx`
 * output html file will be created in current directory
 
 
@@ -25,8 +24,8 @@ that are used to fetch chapter title and body using `-t` and `-b` program argume
 
 Default css selectors are:
     
-* `div.ccgtheadposttitle` for title
-* `div.post_body` for chapter body
+* `title` for title
+* `div.chapter-content` for chapter body
 
 
 Run the program with `--help` argument to see usage reference.
