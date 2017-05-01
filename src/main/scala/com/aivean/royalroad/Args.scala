@@ -23,6 +23,7 @@ class Args(args: Seq[String]) extends ScallopConf(args) {
     descr = "CSS selector for chapter title (text of the found element is used)",
     default = Some("title")
   )
+
   val bodyQuery = opt[String](
     descr = "CSS selector for chapter text body (the whole found element is used)",
     default = Some("div.chapter-content")

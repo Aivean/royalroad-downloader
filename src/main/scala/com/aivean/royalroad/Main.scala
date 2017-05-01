@@ -2,8 +2,9 @@ package com.aivean.royalroad
 
 import java.io.PrintWriter
 
-import net.ruippeixotog.scalascraper.browser.Browser
+import net.ruippeixotog.scalascraper.browser.{Browser, JsoupBrowser}
 import net.ruippeixotog.scalascraper.dsl.DSL
+import org.jsoup.Connection
 
 import scala.collection.parallel.ForkJoinTaskSupport
 
@@ -14,7 +15,13 @@ object Main extends App {
   import DSL.Extract._
   import DSL._
 
-  val browser = new Browser
+  val browser = new JsoupBrowser {
+    override protected[this] def defaultRequestSettings(conn: Connection): Connection = {
+      super.defaultRequestSettings(conn) match {
+        case c => c.timeout(60000)
+      }
+    }
+  }
 
   val doc = browser.get(cliArgs.fictionLink())
 
@@ -23,7 +30,7 @@ object Main extends App {
   println("Title: " + title)
 
   val threads: Seq[String] =
-    (doc >> attrs("href")("#chapters a[href^=/fiction/chapter/]")).distinct
+    (doc >> attrs("href")("#chapters a[href^=/fiction/chapter/]")).toList.distinct
 
   def parsingError(name: String, value: String, url: String): Nothing = {
     throw new IllegalStateException(
@@ -48,7 +55,10 @@ object Main extends App {
     urls
   }
 
-  val chaps = chapUrls.map(u => u -> browser.get(u)).map { case (u, doc) =>
+  val chaps = chapUrls.map { u =>
+    println(s"downloading: $u")
+    u -> browser.get(u)
+  }.map { case (u, doc) =>
     println("parsing: " + u)
 
     <h1>
@@ -56,7 +66,7 @@ object Main extends App {
       .getOrElse(parsingError("chapter title", cliArgs.titleQuery(), u))}
     </h1>.toString() +
       (doc >?> element(cliArgs.bodyQuery()))
-        .getOrElse(parsingError("chapter text", cliArgs.bodyQuery(), u)).toString
+        .getOrElse(parsingError("chapter text", cliArgs.bodyQuery(), u)).outerHtml
   }.seq
 
   val filename = title.replaceAll("[^\\w\\d]+", "_") + ".html"

@@ -8,9 +8,9 @@ as html. Use something like [Calibre](http://calibre-ebook.com/) to convert html
 How to use
 ---
 
-* download [release .jar](https://github.com/Aivean/royalroadl-downloader/releases/download/1.2.0/royalroadl-downloader-assembly-1.2.0.jar)
+* download [release .jar](https://github.com/Aivean/royalroadl-downloader/releases/download/1.2.1/royalroadl-downloader-assembly-1.2.1.jar)
 * install latest java (maybe you have one, check by executing `java -version`)
-* execute `java -jar royalroadl-downloader-assembly-1.2.0.jar http://royalroadl.com/fiction/xxxx`
+* execute `java -jar royalroadl-downloader-assembly-1.2.1.jar http://royalroadl.com/fiction/xxxx`
 * output html file will be created in current directory
 
 
