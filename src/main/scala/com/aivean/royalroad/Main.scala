@@ -30,7 +30,7 @@ object Main extends App {
   println("Title: " + title)
 
   val threads: Seq[String] =
-    (doc >> attrs("href")("#chapters a[href^=/fiction/chapter/]")).toList.distinct
+    (doc >> attrs("href")("#chapters a[href^=/fiction/][href*=/chapter/]")).toList.distinct
 
   def parsingError(name: String, value: String, url: String): Nothing = {
     throw new IllegalStateException(
