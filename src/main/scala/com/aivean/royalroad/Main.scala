@@ -1,8 +1,9 @@
 package com.aivean.royalroad
 
 import java.io.PrintWriter
+import java.net.URLDecoder
 
-import net.ruippeixotog.scalascraper.browser.{Browser, JsoupBrowser}
+import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.dsl.DSL
 import org.jsoup.Connection
 
@@ -56,8 +57,9 @@ object Main extends App {
   }
 
   val chaps = chapUrls.map { u =>
-    println(s"downloading: $u")
-    u -> browser.get(u)
+    val uDecoded = URLDecoder.decode(u, "utf-8")
+    println(s"downloading: $uDecoded")
+    uDecoded -> browser.get(uDecoded)
   }.map { case (u, doc) =>
     println("parsing: " + u)
 
