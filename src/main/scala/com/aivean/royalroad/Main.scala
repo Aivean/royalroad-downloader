@@ -8,6 +8,7 @@ import net.ruippeixotog.scalascraper.dsl.DSL
 import org.jsoup.Connection
 
 import scala.collection.parallel.ForkJoinTaskSupport
+import scala.util.{Failure, Success, Try}
 
 object Main extends App {
 
@@ -56,10 +57,16 @@ object Main extends App {
     urls
   }
 
+  def retry[T](f: => T, times: Int = 3): T = Try(f) match {
+    case Success(res) => res
+    case Failure(e) => if (times > 1) retry(f, times - 1)
+    else throw e
+  }
+
   val chaps = chapUrls.map { u =>
     val uDecoded = URLDecoder.decode(u, "utf-8")
     println(s"downloading: $uDecoded")
-    uDecoded -> browser.get(uDecoded)
+    uDecoded -> retry(browser.get(uDecoded))
   }.map { case (u, doc) =>
     println("parsing: " + u)
 
