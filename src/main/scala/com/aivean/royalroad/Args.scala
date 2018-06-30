@@ -31,7 +31,7 @@ class Args(args: Seq[String]) extends ScallopConf(args) {
 
   val fictionLink = trailArg[String](required = true,
     descr = "Fiction URL in format: http://royalroadl.com/fiction/xxxx",
-    validate = _.matches("https?://royalroadl.com/fiction/\\d+"))
+    validate = _.matches("https?://(www\\.)?royalroadl.com/fiction/\\d+"))
 
   verify()
 }
