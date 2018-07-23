@@ -41,9 +41,15 @@ that are used to fetch chapter title and body using `-t` and `-b` program argume
 Building from sources
 ---
 
-* install [sbt](http://www.scala-sbt.org/)
-* run `sbt assembly` in project directory
+* run `sbt/sbt assembly` in project directory
 
+Running from sources
+--------------------
+
+* run `sbt/sbt --error 'run <arguments>'` in project directory,
+    i.e.:
+
+        sbt/sbt --error 'run --help'
 
 Credits
 ---
