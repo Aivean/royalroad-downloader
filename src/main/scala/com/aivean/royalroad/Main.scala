@@ -49,7 +49,7 @@ object Main extends App {
 
   val chapUrls = {
     val urls = threads.collect {
-      case x if x.startsWith("/") => "http://royalroadl.com" + x
+      case x if x.startsWith("/") => "https://www.royalroadl.com" + x
       case x => x
     }.par
 
@@ -63,7 +63,7 @@ object Main extends App {
     else throw e
   }
 
-  val chaps = chapUrls.map { u =>
+  val chaps = chapUrls.drop(cliArgs.fromChapter() - 1).map { u =>
     val uDecoded = URLDecoder.decode(u, "utf-8")
     println(s"downloading: $uDecoded")
     uDecoded -> retry(browser.get(uDecoded))

@@ -2,11 +2,6 @@ package com.aivean.royalroad
 
 import org.rogach.scallop._;
 
-/**
-  *
-  * @author <a href="mailto:ivan.zaytsev@webamg.com">Ivan Zaytsev</a>
-  *         2016-06-19
-  */
 class Args(args: Seq[String]) extends ScallopConf(args) {
 
   banner(
@@ -18,6 +13,12 @@ class Args(args: Seq[String]) extends ScallopConf(args) {
       |
       |Options:
       | """.stripMargin)
+
+  val fromChapter = opt[Int](
+    descr = "Start download from chapter #",
+    default = Some(0),
+    validate = _ >= 1
+  )
 
   val titleQuery = opt[String](
     descr = "CSS selector for chapter title (text of the found element is used)",
