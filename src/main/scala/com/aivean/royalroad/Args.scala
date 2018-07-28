@@ -16,7 +16,7 @@ class Args(args: Seq[String]) extends ScallopConf(args) {
 
   val fromChapter = opt[Int](
     descr = "Start download from chapter #",
-    default = Some(0),
+    default = Some(1),
     validate = _ >= 1
   )
 
