@@ -42,14 +42,14 @@ object Main extends App {
          | Check $url
          | and specify correct css selector for $name as command line argument for this program.
          | Check readme or run this program with --help parameter for details:
-         |   https://github.com/Aivean/royalroadl-downloader/blob/master/readme.md
+         |   https://github.com/Aivean/royalroad-downloader/blob/master/readme.md
          | Css selectors reference: http://www.w3schools.com/cssref/css_selectors.asp
       """.stripMargin)
   }
 
   val chapUrls = {
     val urls = threads.collect {
-      case x if x.startsWith("/") => "https://www.royalroadl.com" + x
+      case x if x.startsWith("/") => "https://www.royalroad.com" + x
       case x => x
     }.par
 

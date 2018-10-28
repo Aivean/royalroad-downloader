@@ -1,16 +1,16 @@
-[Royal Road](http://royalroadl.com/) book downloader
+[Royal Road](http://royalroad.com/) book downloader
 ---
 
-Nothing fancy, just a simple CLI that imports fiction from  [Royal Road](http://royalroadl.com/)
+Nothing fancy, just a simple CLI that imports fiction from  [Royal Road](http://royalroad.com/)
 as html. Use something like [Calibre](http://calibre-ebook.com/) to convert html to any desired format.
 
 
 How to use
 ---
 
-* download latest [release .jar](https://github.com/Aivean/royalroadl-downloader/releases/latest)
+* download latest [release .jar](https://github.com/Aivean/royalroad-downloader/releases/latest)
 * install latest java (maybe you have one, check by executing `java -version`)
-* execute `java -jar royalroadl-downloader-assembly-VERSION.jar http://royalroadl.com/fiction/xxxx`
+* execute `java -jar royalroad-downloader-assembly-VERSION.jar http://royalroadl.com/fiction/xxxx`
     (replace `VERSION` and `xxxx` with corresponding numbers)
 * output html file will be created in current directory
 
@@ -19,7 +19,7 @@ Troubleshooting
 ---
 
 1. It may happen that RoyalRoad changes it's html format and this parser is no longer working.
-   In such case please [create an issue](https://github.com/Aivean/royalroadl-downloader/issues).
+   In such case please [create an issue](https://github.com/Aivean/royalroad-downloader/issues).
    You also can try to work around the problem by overriding [CSS selectors](http://www.w3schools.com/cssref/css_selectors.asp)
 that are used to fetch chapter title and body using `-t` and `-b` program arguments.
 

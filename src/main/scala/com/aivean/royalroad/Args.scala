@@ -6,7 +6,7 @@ class Args(args: Seq[String]) extends ScallopConf(args) {
 
   banner(
     """Usage:
-      | [-t css_query_for_title] [-b css_query_for_chapter_body] http://royalroadl.com/fiction/xxxx
+      | [-t css_query_for_title] [-b css_query_for_chapter_body] https://royalroad.com/fiction/xxxx
       |
       | Override CSS queries (http://www.w3schools.com/cssref/css_selectors.asp) for title or body
       | if RoyalRoad changed it's format and this program works no longer.
@@ -31,9 +31,9 @@ class Args(args: Seq[String]) extends ScallopConf(args) {
   )
 
   val fictionLink = trailArg[String](required = true,
-    descr = "Fiction URL in format: http://royalroadl.com/fiction/xxxx\n" +
-      "\tor http[s]://royalroadl.com/fiction/xxxx/fiction-title",
-    validate = _.matches("https?://(www\\.)?royalroadl.com/fiction/\\d+(/([^/]+)/?)?"))
+    descr = "Fiction URL in format: http://royalroad.com/fiction/xxxx\n" +
+      "\tor http[s]://[www.]royalroad.com/fiction/xxxx/fiction-title",
+    validate = _.matches("https?://(www\\.)?royalroadl?.com/fiction/\\d+(/([^/]+)/?)?"))
 
   verify()
 }
