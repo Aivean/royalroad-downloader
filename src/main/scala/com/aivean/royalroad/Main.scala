@@ -81,9 +81,9 @@ object Main extends App {
   val filename = title.replaceAll("[^\\w\\d]+", "_") + ".html"
   println("Saving as: " + filename)
 
-  new PrintWriter(filename) {
+  new PrintWriter(filename, "UTF-8") {
     write(
-      s"""<html><head><title>$title</title></head><body>
+      s"""<html><head><meta charset="UTF-8"><title>$title</title></head><body>
          |${chaps.mkString("\n")}
          |</body>
          |</html>
