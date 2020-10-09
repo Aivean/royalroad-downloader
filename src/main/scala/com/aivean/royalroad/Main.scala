@@ -2,6 +2,7 @@ package com.aivean.royalroad
 
 import java.io.PrintWriter
 import java.net.URLDecoder
+import java.util.concurrent.atomic.AtomicLong
 
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.dsl.DSL
@@ -57,6 +58,28 @@ object Main extends App {
     urls
   }
 
+  // delay requests until that time
+  val requestTimeLimiter = new AtomicLong()
+
+  def backpressure[T](f: => T, delayMs: Long = 1000): T = {
+    while (requestTimeLimiter.get() > System.currentTimeMillis()) {
+      Thread.sleep(Math.max(0, System.currentTimeMillis() - requestTimeLimiter.get()))
+    }
+    Try(f) match {
+      case Success(res) => res
+      case Failure(e) => e match {
+        case statusExp: org.jsoup.HttpStatusException if statusExp.getStatusCode == 429 =>
+          import scala.compat.java8.FunctionConverters.asJavaLongUnaryOperator
+          requestTimeLimiter.getAndUpdate(
+            asJavaLongUnaryOperator(math.max(_: Long, System.currentTimeMillis() + delayMs))
+          ) < System.currentTimeMillis()
+          Thread.sleep(2000)
+          backpressure(f, delayMs * 3 / 2)
+        case _ => throw e
+      }
+    }
+  }
+
   def retry[T](f: => T, times: Int = 3): T = Try(f) match {
     case Success(res) => res
     case Failure(e) => if (times > 1) retry(f, times - 1)
@@ -66,7 +89,7 @@ object Main extends App {
   val chaps = chapUrls.drop(cliArgs.fromChapter() - 1).map { u =>
     val uDecoded = URLDecoder.decode(u, "utf-8")
     println(s"downloading: $uDecoded")
-    uDecoded -> retry(browser.get(uDecoded))
+    uDecoded -> retry(backpressure(browser.get(uDecoded)))
   }.map { case (u, doc) =>
     println("parsing: " + u)
 
