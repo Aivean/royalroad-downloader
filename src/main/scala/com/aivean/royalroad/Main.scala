@@ -93,7 +93,7 @@ object Main extends App {
   }.map { case (u, doc) =>
     println("parsing: " + u)
 
-    <h1>
+    <h1 class="chapter">
       {(doc >?> text(cliArgs.titleQuery()))
       .getOrElse(parsingError("chapter title", cliArgs.titleQuery(), u))}
     </h1>.toString() +
