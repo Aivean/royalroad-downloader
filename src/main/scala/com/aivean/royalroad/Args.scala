@@ -1,5 +1,6 @@
 package com.aivean.royalroad
 
+import com.aivean.royalroad.Args.urlValidationRegex
 import org.rogach.scallop._;
 
 class Args(args: Seq[String]) extends ScallopConf(args) {
@@ -33,7 +34,11 @@ class Args(args: Seq[String]) extends ScallopConf(args) {
   val fictionLink = trailArg[String](required = true,
     descr = "Fiction URL in format: http://royalroad.com/fiction/xxxx\n" +
       "\tor http[s]://[www.]royalroad.com/fiction/xxxx/fiction-title",
-    validate = _.matches("https?://(www\\.)?royalroadl?.com/fiction/\\d+(/([^/]+))?/?"))
+    validate = _.matches(urlValidationRegex))
 
   verify()
+}
+
+object Args {
+  val urlValidationRegex = "https?://(www\\.)?royalroadl?.com/fiction/\\d+(/([^/]+))?/?"
 }
