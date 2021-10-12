@@ -1,13 +1,12 @@
 package com.aivean.royalroad
 
-import java.io.PrintWriter
-import java.net.URLDecoder
-import java.util.concurrent.atomic.AtomicLong
-
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.dsl.DSL
 import org.jsoup.Connection
 
+import java.io.PrintWriter
+import java.net.URLDecoder
+import java.util.concurrent.atomic.AtomicLong
 import scala.collection.parallel.ForkJoinTaskSupport
 import scala.util.{Failure, Success, Try}
 
@@ -94,7 +93,7 @@ object Main extends App {
     println("parsing: " + u)
 
     <h1 class="chapter">
-      {(doc >?> text(cliArgs.titleQuery()))
+      {(doc >?> text(cliArgs.titleQuery()).map(_.trim.stripSuffix(" - " + title)))
       .getOrElse(parsingError("chapter title", cliArgs.titleQuery(), u))}
     </h1>.toString() +
       (doc >?> element(cliArgs.bodyQuery()))
