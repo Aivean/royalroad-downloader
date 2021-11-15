@@ -60,35 +60,29 @@ object Main extends App {
   try {
     printWriter.write(s"""<html><head><meta charset="UTF-8"><title>$title</title></head><body>""")
 
-    // recursively process the queue until the end message None is received
-    def rec(): Unit = chapQ.take() match {
-      case None =>
-      case Some(f) =>
-        Await.result(f, duration.Duration.Inf) match {
-          case (url, doc) =>
-            println("parsing: " + url)
+    // process the queue until the end message None is received
+    Stream.continually(chapQ.take())
+      .takeWhile(_.isDefined)
+      .flatMap(_.map(Await.result(_, duration.Duration.Inf)))
+      .foreach { case (url, doc) =>
+        println("parsing: " + url)
 
-            // write chapter title to file
-            printWriter.write(
-              <h1 class="chapter">
-                {(doc >?> text(cliArgs.titleQuery()).map(_.trim.stripSuffix(" - " + title)))
-                .getOrElse(parsingError("chapter title", cliArgs.titleQuery(), url))}
-              </h1>.toString()
-            )
+        // write chapter title to file
+        printWriter.write(
+          <h1 class="chapter">
+            {(doc >?> text(cliArgs.titleQuery()).map(_.trim.stripSuffix(" - " + title)))
+            .getOrElse(parsingError("chapter title", cliArgs.titleQuery(), url))}
+          </h1>.toString()
+        )
 
-            // write chapter content to file
-            printWriter.write(
-              (doc >?> element(cliArgs.bodyQuery()))
-                .getOrElse(parsingError("chapter text", cliArgs.bodyQuery(), url)).outerHtml
-            )
+        // write chapter content to file
+        printWriter.write(
+          (doc >?> element(cliArgs.bodyQuery()))
+            .getOrElse(parsingError("chapter text", cliArgs.bodyQuery(), url)).outerHtml
+        )
 
-            printWriter.write("\n")
-
-            // parse next chapter
-            rec()
-        }
-    }
-    rec()
+        printWriter.write("\n")
+      }
 
   } finally {
     printWriter.write("</body></html>")
