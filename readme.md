@@ -1,9 +1,10 @@
 [Royal Road](http://royalroad.com/) book downloader
 ---
 
-Nothing fancy, just a simple CLI that imports fiction from  [Royal Road](http://royalroad.com/)
+A simple command-line tool that downloads fiction from  [Royal Road](http://royalroad.com/)
 as html. Use something like [Calibre](http://calibre-ebook.com/) to convert html to any desired format.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 How to use
 ---
@@ -42,6 +43,8 @@ Building from sources
 ---
 
 * run `sbt/sbt assembly` in project directory
+
+Note: build tested to work with Java 8.
 
 Running from sources
 --------------------
