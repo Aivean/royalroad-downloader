@@ -1,0 +1,30 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '8'
+          cache: 'sbt'
+
+      - name: Build JAR
+        run: |
+          sbt assembly
+          mv target/scala-2.11/*-assembly-*.jar royalroad-downloader.jar
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: royalroad-downloader.jar
+          fail_on_unmatched_files: true

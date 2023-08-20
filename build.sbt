@@ -1,6 +1,6 @@
 name := "royalroad-downloader"
 
-version := "2.5.0"
+version := "SNAPSHOT"
 
 scalaVersion := "2.11.11"
 
