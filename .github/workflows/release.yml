@@ -18,9 +18,12 @@ jobs:
           java-version: '8'
           cache: 'sbt'
 
+      - name: Extract version from tag
+        run: echo "PROJECT_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
       - name: Build JAR
         run: |
-          sbt assembly
+          sbt 'set version := "'"$PROJECT_VERSION"'"' assembly
           mv target/scala-2.11/*-assembly-*.jar royalroad-downloader.jar
 
       - name: Release

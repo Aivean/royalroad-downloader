@@ -14,6 +14,8 @@ import scala.concurrent.{Await, Future, duration}
 
 object Main extends App {
 
+  print ("Royalroad downloader v" + VersionInfo.version + "\n")
+
   def handleFromArg[T](chaps: Seq[T], fromChap: Int): Seq[T] =
     if (fromChap > 0) chaps.drop(fromChap - 1) else if (fromChap < 0) chaps.takeRight(-fromChap) else chaps
 
