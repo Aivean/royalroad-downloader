@@ -14,6 +14,10 @@ import scala.concurrent.{Await, Future, duration}
 
 object Main extends App {
 
+  def handleFromArg[T](chaps: Seq[T], fromChap: Int): Seq[T] =
+    if (fromChap > 0) chaps.drop(fromChap - 1) else if (fromChap < 0) chaps.takeRight(-fromChap) else chaps
+
+
   val cliArgs = new Args(args)
 
   import DSL.Extract._
@@ -40,12 +44,18 @@ object Main extends App {
     case x => x
   }
 
+  val chapUrlsConstrained = handleFromArg(chapUrls, cliArgs.fromChapter())
+  if (chapUrlsConstrained.isEmpty) {
+    println("No chapters found")
+    System.exit(1)
+  }
+
   import scala.concurrent.ExecutionContext.Implicits.global
 
   // chapter producer, with parallelism limited by the capacity of queue (currently capacity = 4)
   val chapQ = new ArrayBlockingQueue[Option[Future[(String, Document)]]](4, true)
   Future {
-    chapUrls.drop(cliArgs.fromChapter() - 1).foreach { u =>
+    chapUrlsConstrained.foreach { u =>
       val uDecoded = URLDecoder.decode(u, "utf-8")
       println(s"downloading: $uDecoded")
       chapQ.put(Some(Future(uDecoded -> retry(backpressure(browser.get(uDecoded))))))
@@ -53,7 +63,15 @@ object Main extends App {
     chapQ.put(None)
   }
 
-  val filename = title.replaceAll("[^\\w\\d]+", "_") + ".html"
+  val filename = title.replaceAll("[^\\w\\d]+", "_") + {
+    // when chapter range is specified, add it to the filename
+    if (chapUrls.size != chapUrlsConstrained.size) {
+      val firstChapter = chapUrls.indexOf(chapUrlsConstrained.head)
+      val lastChapter = chapUrls.indexOf(chapUrlsConstrained.last)
+      if (firstChapter == lastChapter) "_chapter_" + (firstChapter + 1) else
+        "_chapters_" + (firstChapter + 1) + "-" + (lastChapter + 1)
+    } else ""
+  } + ".html"
   println("Saving as: " + filename)
 
   val printWriter = new PrintWriter(filename, "UTF-8")
@@ -90,4 +108,5 @@ object Main extends App {
   }
 
   println("done")
+  println("Saved: " + filename)
 }

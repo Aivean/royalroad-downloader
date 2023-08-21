@@ -12,8 +12,11 @@ How to use
 * download the latest [release .jar](https://github.com/Aivean/royalroad-downloader/releases/latest)
 * install the latest java (maybe you have one, check by executing `java -version`)
 * execute `java -jar royalroad-downloader-assembly-VERSION.jar https://royalroadl.com/fiction/...`
-    (replace royalroad fiction URL with your link and `VERSION` with the corresponding number)
+    (replace royalroad fiction URL with your link and `VERSION` with the corresponding number) 
 * the output html file will be created in the current directory
+ 
+
+Run `java -jar royalroad-downloader-assembly-VERSION.jar --help` to see the full usage reference.
 
 
 Troubleshooting

@@ -16,9 +16,12 @@ class Args(args: Seq[String]) extends ScallopConf(args) {
       | """.stripMargin)
 
   val fromChapter = opt[Int](
-    descr = "Start download from chapter #",
-    default = Some(1),
-    validate = _ >= 1
+    descr = "Start download from chapter #. " +
+      "Positive values indicate chapters from the beginning. " +
+      "(1 means start from the first chapter, 2 means second chapter) " +
+      "Negative values indicate chapters from the end " +
+      "(-1 means last chapter, -2 means two chapters from the end)",
+    default = Some(1)
   )
 
   val titleQuery = opt[String](
