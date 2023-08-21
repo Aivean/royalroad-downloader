@@ -19,6 +19,13 @@ object Main extends App {
   def handleFromArg[T](chaps: Seq[T], fromChap: Int): Seq[T] =
     if (fromChap > 0) chaps.drop(fromChap - 1) else if (fromChap < 0) chaps.takeRight(-fromChap) else chaps
 
+  def extractFictionLink(link: String): String = {
+    val regex = Args.urlValidationRegex.r
+    link match {
+      case regex(url, _, _) => url
+      case _ => throw new IllegalArgumentException("Invalid fiction link: " + link)
+    }
+  }
 
   val cliArgs = new Args(args)
 
@@ -33,7 +40,7 @@ object Main extends App {
     }
   }
 
-  val doc = browser.get(cliArgs.fictionLink())
+  val doc = browser.get(extractFictionLink(cliArgs.fictionLink()))
   val title = doc >> text("title")
 
   println("Title: " + title)

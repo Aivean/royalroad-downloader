@@ -43,5 +43,5 @@ class Args(args: Seq[String]) extends ScallopConf(args) {
 }
 
 object Args {
-  val urlValidationRegex = "https?://(www\\.)?royalroadl?.com/fiction/\\d+(/([^/]+))?/?"
+  val urlValidationRegex = "(https?://(www\\.)?royalroadl?.com/fiction/\\d+)(/.*)?"
 }
