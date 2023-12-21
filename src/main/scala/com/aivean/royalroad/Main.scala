@@ -2,15 +2,17 @@ package com.aivean.royalroad
 
 import com.aivean.royalroad.Utils._
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
+import net.ruippeixotog.scalascraper.browser.JsoupBrowser.JsoupElement
 import net.ruippeixotog.scalascraper.dsl.DSL
 import net.ruippeixotog.scalascraper.model.Document
 import org.jsoup.Connection
 
 import java.io.PrintWriter
-import java.net.URLDecoder
+import java.net.{URL, URLDecoder}
 import java.util.concurrent.ArrayBlockingQueue
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future, duration}
+import scala.util.{Failure, Success, Try}
 
 object Main extends App {
 
@@ -102,11 +104,32 @@ object Main extends App {
           </h1>.toString()
         )
 
+        // get chapter content
+        val chapterContent = (doc >?> element(cliArgs.bodyQuery()))
+          .getOrElse(parsingError("chapter text", cliArgs.bodyQuery(), url))
+
+        // find all image elements in the chapter content
+        val imageElements = chapterContent.select("img")
+
+        // replace all image elements with their data URI
+        imageElements.collect {
+          case img: JsoupElement =>
+          val imgUrl = img.attr("src")
+          println("embedding image: " + imgUrl)
+          Try(new URL(imgUrl)) match {
+            case Success(url) =>
+              Try(retry(getDataURIForURL(url))) match {
+                case Success(dataUrl) => img.underlying.attr("src", dataUrl.toString)
+                case Failure(e) =>
+                  println(s"Failed to convert $imgUrl to data URL")
+                  e.printStackTrace()
+              }
+            case Failure(_) => println(s"Invalid URL: $imgUrl")
+          }
+        }
+
         // write chapter content to file
-        printWriter.write(
-          (doc >?> element(cliArgs.bodyQuery()))
-            .getOrElse(parsingError("chapter text", cliArgs.bodyQuery(), url)).outerHtml
-        )
+        printWriter.write(chapterContent.outerHtml)
 
         printWriter.write("\n")
       }

@@ -1,7 +1,11 @@
 package com.aivean.royalroad
 
+import java.io.{BufferedInputStream, ByteArrayOutputStream, IOException}
+import java.net._
+import java.util.Base64
 import java.util.concurrent.atomic.AtomicLong
 import scala.util.{Failure, Success, Try}
+
 
 /**
  * Misc helper functions
@@ -55,4 +59,44 @@ object Utils {
     case Success(res) => res
     case Failure(e) => if (times > 1) Utils.retry(f, times - 1) else throw e
   }
+
+  def withResource[R <: AutoCloseable, T](resource: => R)(block: R => T): T = {
+    var res: Option[R] = None
+    try {
+      res = Some(resource)
+      block(res.get)
+    } finally {
+      res.foreach(_.close())
+    }
+  }
+
+  def getDataURIForURL(url: URL): URI = withResource(url.openStream()) { is =>
+    val bis = new BufferedInputStream(is)
+    val contentType = URLConnection.guessContentTypeFromStream(bis) match {
+      case null => // try to guess from url
+        val ext = url.toString.split('.').lastOption
+        ext match {
+          case Some("jpg") => "image/jpeg"
+          case Some("png") => "image/png"
+          case Some("gif") => "image/gif"
+          case _ => null
+        }
+      case x => x
+    }
+
+    if (contentType != null) {
+      withResource(new ByteArrayOutputStream()) { os =>
+        val chunk = new Array[Byte](4096)
+        Stream.continually(bis.read(chunk))
+          .takeWhile(_ > 0)
+          .foreach(readBytes => os.write(chunk, 0, readBytes))
+        os.flush()
+        new URI("data:" + contentType + ";base64," +
+          Base64.getEncoder.encodeToString(os.toByteArray))
+      }
+    } else {
+      throw new IOException("could not get content type from " + url.toExternalForm)
+    }
+  }
+
 }
