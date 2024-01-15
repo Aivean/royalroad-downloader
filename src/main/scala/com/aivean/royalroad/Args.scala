@@ -24,6 +24,12 @@ class Args(args: Seq[String]) extends ScallopConf(args) {
     default = Some(1)
   )
 
+  val embedImages = opt[Boolean](
+    descr = "Enable embedding of images as data URLs",
+    short = 'e',
+    default = Some(false)
+  )
+
   val titleQuery = opt[String](
     descr = "CSS selector for chapter title (text of the found element is used)",
     default = Some("title")

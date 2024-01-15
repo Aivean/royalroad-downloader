@@ -108,23 +108,24 @@ object Main extends App {
         val chapterContent = (doc >?> element(cliArgs.bodyQuery()))
           .getOrElse(parsingError("chapter text", cliArgs.bodyQuery(), url))
 
-        // find all image elements in the chapter content
-        val imageElements = chapterContent.select("img")
-
-        // replace all image elements with their data URI
-        imageElements.collect {
-          case img: JsoupElement =>
-          val imgUrl = img.attr("src")
-          println("embedding image: " + imgUrl)
-          Try(new URL(imgUrl)) match {
-            case Success(url) =>
-              Try(retry(getDataURIForURL(url))) match {
-                case Success(dataUrl) => img.underlying.attr("src", dataUrl.toString)
-                case Failure(e) =>
-                  println(s"Failed to convert $imgUrl to data URL")
-                  e.printStackTrace()
+        if (cliArgs.embedImages()) {
+          // find all image elements in the chapter content
+          // replace all image elements with their data URI
+          chapterContent.select("img").collect {
+            case img: JsoupElement if img.hasAttr("src") =>
+              val imgUrl = img.attr("src")
+              println("embedding image: " + imgUrl)
+              Try(new URL(imgUrl)) match {
+                case Success(url) =>
+                  Try(retry(getDataURIForURL(url))) match {
+                    case Success(dataUrl) => img.underlying.attr("src", dataUrl.toString)
+                    case Failure(e) =>
+                      println(s"Failed to convert $imgUrl to data URL")
+                      e.printStackTrace()
+                  }
+                case Failure(_) => println(s"Invalid URL: $imgUrl")
               }
-            case Failure(_) => println(s"Invalid URL: $imgUrl")
+            case img: JsoupElement => println(s"Warning: image without src attribute: ${img.outerHtml} in $url")
           }
         }
 
@@ -133,6 +134,7 @@ object Main extends App {
 
         printWriter.write("\n")
       }
+
 
   } finally {
     printWriter.write("</body></html>")
