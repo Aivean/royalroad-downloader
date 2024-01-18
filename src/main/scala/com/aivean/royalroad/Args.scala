@@ -40,6 +40,11 @@ class Args(args: Seq[String]) extends ScallopConf(args) {
     default = Some("div.chapter-content")
   )
 
+  val addIsoDate = opt[Boolean](
+    descr = "Add todays date in ISO format (YYYY-MM-DD) to the end of the filename",
+    default = Some(false)
+  )
+
   val fictionLink = trailArg[String](required = true,
     descr = "Fiction URL in format: http://royalroad.com/fiction/xxxx\n" +
       "\tor http[s]://[www.]royalroad.com/fiction/xxxx/fiction-title",

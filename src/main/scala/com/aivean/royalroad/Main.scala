@@ -9,6 +9,8 @@ import org.jsoup.Connection
 
 import java.io.PrintWriter
 import java.net.{URL, URLDecoder}
+import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.concurrent.ArrayBlockingQueue
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future, duration}
@@ -82,6 +84,12 @@ object Main extends App {
       if (firstChapter == lastChapter) "_chapter_" + (firstChapter + 1) else
         "_chapters_" + (firstChapter + 1) + "-" + (lastChapter + 1)
     } else ""
+  } + {
+    val isoDateFormat = new SimpleDateFormat("yyyy-MM-dd")
+    val filesafeIsoDate = isoDateFormat.format(Calendar.getInstance().getTime())
+    if (cliArgs.addIsoDate())
+      "_" + filesafeIsoDate
+    else ""
   } + ".html"
   println("Saving as: " + filename)
 
