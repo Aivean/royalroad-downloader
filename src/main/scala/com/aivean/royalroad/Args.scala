@@ -40,6 +40,11 @@ class Args(args: Seq[String]) extends ScallopConf(args) {
     default = Some("div.chapter-content")
   )
 
+  val stripSiteTitle = opt[Boolean](
+    descr = "Remove the Royal Road site title part of the story in filename",
+    default = Some(false)
+  )
+
   val fictionLink = trailArg[String](required = true,
     descr = "Fiction URL in format: http://royalroad.com/fiction/xxxx\n" +
       "\tor http[s]://[www.]royalroad.com/fiction/xxxx/fiction-title",
