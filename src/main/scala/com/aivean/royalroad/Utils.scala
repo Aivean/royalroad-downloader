@@ -11,6 +11,47 @@ import scala.util.{Failure, Success, Try}
  * Misc helper functions
  */
 object Utils {
+
+  object WarningFuzzyMatcher {
+    val keywords = Map(
+      "amazon" -> 1.0,
+      "stolen" -> 0.8,
+      "theft" -> 0.8,
+      "report" -> 0.7,
+      "please report" -> 0.61,
+      "without permission" -> 0.6,
+      "without consent" -> 0.6,
+      "unauthorized" -> 0.6,
+      "pilfered" -> 0.5,
+      "purloined" -> 0.5,
+      "appropriated" -> 0.5,
+      "royal road" -> 0.9,
+      "story" -> 0.4,
+      "narrative" -> 0.4,
+      "content" -> 0.4,
+      "novel" -> 0.4,
+      "tale" -> 0.4,
+      "infringement" -> 0.5,
+      "violation" -> 0.5,
+      "not rightfully" -> 0.5,
+      "taken without" -> 0.7,
+      "misappropriated" -> 0.6,
+      "sightings" -> 0.4,
+      "encounter" -> 0.3
+    )
+
+    val threshold = 2.5
+
+    def scoreString(s: String): Double = {
+      keywords.foldLeft(0.0) {
+        case (score, (keyword, value)) =>
+          if (s.toLowerCase.contains(keyword)) score + value else score
+      }
+    }
+
+    def apply(warning: String): Boolean = warning.length < 200 && scoreString(warning) > threshold
+  }
+
   def parsingError(name: String, value: String, url: String): Nothing = {
     throw new IllegalStateException(
       s""" Can't find $name using css query: `$value`

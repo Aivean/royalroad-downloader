@@ -30,6 +30,12 @@ class Args(args: Seq[String]) extends ScallopConf(args) {
     default = Some(false)
   )
 
+  val removeWarnings = opt[Boolean](
+    descr = "Remove warnings about reporting story if found on Amazon",
+    noshort = true,
+    default = Some(false)
+  )
+
   val titleQuery = opt[String](
     descr = "CSS selector for chapter title (text of the found element is used)",
     default = Some("title")

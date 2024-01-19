@@ -129,6 +129,19 @@ object Main extends App {
           }
         }
 
+        if (cliArgs.removeWarnings()) {
+          // find all paragraphs
+          val paragraphs = chapterContent.select("p")
+          // find all paragraphs that contain the warning
+          val warningParagraphs = paragraphs.filter(p => Utils.WarningFuzzyMatcher(p.text))
+          // remove all warning paragraphs
+          warningParagraphs.collect {
+            case p: JsoupElement =>
+              println("removing warning: " + p.text)
+              p.underlying.remove()
+          }
+        }
+
         // write chapter content to file
         printWriter.write(chapterContent.outerHtml)
 
