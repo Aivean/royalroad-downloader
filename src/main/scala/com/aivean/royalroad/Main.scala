@@ -74,12 +74,9 @@ object Main extends App {
     chapQ.put(None)
   }
 
-  val filesafeRRSiteTitleSuffix = "_Royal_Road"
-  val filesafeTitle = title.replaceAll("[^\\w\\d]+", "_").stripSuffix(filesafeRRSiteTitleSuffix)
+  val filesafeTitle = title.stripSuffix(" | Royal Road").replaceAll("[^\\w\\d]+", "_")
 
   val filename = filesafeTitle + {
-    if (cliArgs.keepSiteTitle()) filesafeRRSiteTitleSuffix else ""
-  } + {
     // when chapter range is specified, add it to the filename
     if (chapUrls.size != chapUrlsConstrained.size) {
       val firstChapter = chapUrls.indexOf(chapUrlsConstrained.head)
