@@ -74,7 +74,9 @@ object Main extends App {
     chapQ.put(None)
   }
 
-  val filename = title.replaceAll("[^\\w\\d]+", "_") + {
+  val filesafeTitle = title.stripSuffix(" | Royal Road").replaceAll("[^\\w\\d]+", "_")
+
+  val filename = filesafeTitle + {
     // when chapter range is specified, add it to the filename
     if (chapUrls.size != chapUrlsConstrained.size) {
       val firstChapter = chapUrls.indexOf(chapUrlsConstrained.head)
