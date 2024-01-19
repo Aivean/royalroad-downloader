@@ -40,8 +40,8 @@ class Args(args: Seq[String]) extends ScallopConf(args) {
     default = Some("div.chapter-content")
   )
 
-  val stripSiteTitle = opt[Boolean](
-    descr = "Remove the Royal Road site title part of the story in filename",
+  val keepSiteTitle = opt[Boolean](
+    descr = "Keep the Royal Road site title part of the story in filename",
     default = Some(false)
   )
 

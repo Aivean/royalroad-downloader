@@ -78,7 +78,7 @@ object Main extends App {
   val filesafeTitle = title.replaceAll("[^\\w\\d]+", "_").stripSuffix(filesafeRRSiteTitleSuffix)
 
   val filename = filesafeTitle + {
-    if (cliArgs.stripSiteTitle()) "" else filesafeRRSiteTitleSuffix
+    if (cliArgs.keepSiteTitle()) filesafeRRSiteTitleSuffix else ""
   } + {
     // when chapter range is specified, add it to the filename
     if (chapUrls.size != chapUrlsConstrained.size) {
