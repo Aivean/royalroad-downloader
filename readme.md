@@ -4,6 +4,9 @@
 A simple command line tool that downloads fiction from [Royal Road](http://royalroad.com/)
 as html. Use [Calibre](http://calibre-ebook.com/) to convert html to any desired format.
 
+![test](https://github.com/Aivean/royalroad-downloader/actions/workflows/test.yml/badge.svg?branch=master)
+[![Github All Releases](https://img.shields.io/github/downloads/Aivean/royalroad-downloader/total.svg)](https://github.com/Aivean/royalroad-downloader/releases/latest)
+[![GitHub last commit](https://img.shields.io/github/last-commit/Aivean/royalroad-downloader.svg)](https://github.com/Aivean/royalroad-downloader/commits/master)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 How to use
