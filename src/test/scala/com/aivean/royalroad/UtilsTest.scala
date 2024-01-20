@@ -44,4 +44,33 @@ class UtilsTest extends FunSuite {
     }
   }
 
+
+  test("renderTemplate") {
+    assert(Utils.renderTemplate(
+      "{title}_{chapters}_{date}",
+      Map("title" -> "MyTitle", "chapters" -> "1-2", "date" -> "2022-01-01")
+    ) == "MyTitle_1-2_2022-01-01")
+
+    assert(Utils.renderTemplate(
+      "{title}{}{chapters}{}{date}",
+      Map("title" -> "MyTitle", "chapters" -> "1-2", "date" -> "2022-01-01")
+    ) == "MyTitle_1-2_2022-01-01")
+
+    assert(Utils.renderTemplate(
+      "{}{title}{}{chapters}{}{date}{}",
+      Map("title" -> "MyTitle", "chapters" -> "", "date" -> "2022-01-01")
+    ) == "MyTitle_2022-01-01")
+
+    assert(Utils.renderTemplate(
+      "{}{title}{}{chapters}{}{date}{}.html{}",
+      Map("title" -> "MyTitle", "chapters" -> "", "date" -> "2022-01-01")
+    ) == "MyTitle_2022-01-01.html")
+
+    assert(Utils.renderTemplate(
+      "{}{oops}{}",
+      Map()
+    ) == "{oops}")
+
+  }
+
 }

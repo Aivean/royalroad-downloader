@@ -46,6 +46,22 @@ class Args(args: Seq[String]) extends ScallopConf(args) {
     default = Some("div.chapter-content")
   )
 
+  val output = opt[String](
+    descr = "Output file path and name." +
+      " Supports placeholders:" +
+      " {title}, {chapters}, {today}, " +
+      " {} - smart separator" +
+      " (removed if in the beginning" +
+      " or in the end of the file name," +
+      " replaced with \"_\" and collapsed otherwise" +
+      " e.g. \"{}a{}{}b{}.html\" -> \"a_b.html\")." +
+      " Default format is \"{t}{}{c}.html\"",
+    short = 'o',
+    default = Some("{title}{}{chapters}.html"),
+    // sanity check for legal output filename
+    validate = fileName => !fileName.matches("[\\\\:*?\"<>|]") && fileName.nonEmpty && !fileName.endsWith("/")
+  )
+
   val fictionLink = trailArg[String](required = true,
     descr = "Fiction URL in format: http://royalroad.com/fiction/xxxx\n" +
       "\tor http[s]://[www.]royalroad.com/fiction/xxxx/fiction-title",

@@ -74,19 +74,25 @@ object Main extends App {
     chapQ.put(None)
   }
 
-  val filesafeTitle = title.stripSuffix(" | Royal Road").replaceAll("[^\\w\\d]+", "_")
+  val filename = renderTemplate(cliArgs.output(), Map(
+    "title" -> fileNameSafe(title.stripSuffix(" | Royal Road")),
+    "chapters" -> {
+      // when chapter range is specified, add it to the filename
+      if (chapUrls.size != chapUrlsConstrained.size) {
+        val firstChapter = chapUrls.indexOf(chapUrlsConstrained.head)
+        val lastChapter = chapUrls.indexOf(chapUrlsConstrained.last)
+        if (firstChapter == lastChapter) "chapter_" + (firstChapter + 1) else
+          "chapters_" + (firstChapter + 1) + "-" + (lastChapter + 1)
+      } else ""
+    },
+    "today" -> {
+      new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date())
+    }
+  ))
 
-  val filename = filesafeTitle + {
-    // when chapter range is specified, add it to the filename
-    if (chapUrls.size != chapUrlsConstrained.size) {
-      val firstChapter = chapUrls.indexOf(chapUrlsConstrained.head)
-      val lastChapter = chapUrls.indexOf(chapUrlsConstrained.last)
-      if (firstChapter == lastChapter) "_chapter_" + (firstChapter + 1) else
-        "_chapters_" + (firstChapter + 1) + "-" + (lastChapter + 1)
-    } else ""
-  } + ".html"
   println("Saving as: " + filename)
 
+  createDirectoryIfNotExists(filename)
   val printWriter = new PrintWriter(filename, "UTF-8")
   try {
     printWriter.write(s"""<html><head><meta charset="UTF-8"><title>$title</title></head><body>""")

@@ -140,4 +140,21 @@ object Utils {
     }
   }
 
+  def fileNameSafe(s: String): String = s.replaceAll("[^\\w\\d]+", "_")
+
+  def renderTemplate(template: String, replacements: Map[String, String]): String =
+    replacements.foldLeft(template) {
+        case (acc, (key, value)) =>
+          acc.replaceAllLiterally("{" + key + "}", value)
+      }.replaceAll("""^(\{})+""", "")
+      .replaceAll("""(\{})$""", "")
+      .replaceAll("""(\{})(?=\.)""", "")
+      .replaceAll("""(_*\{})+""", "_")
+
+  def createDirectoryIfNotExists(path: String): Unit = {
+    val dir = new java.io.File(path).getParentFile
+    if (dir != null && !dir.exists()) {
+      dir.mkdirs()
+    }
+  }
 }
