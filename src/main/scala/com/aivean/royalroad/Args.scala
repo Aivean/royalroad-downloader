@@ -30,6 +30,12 @@ class Args(args: Seq[String]) extends ScallopConf(args) {
     default = Some(false)
   )
 
+  val includeTitlePage = opt[Boolean](
+    descr = "Include title page with fiction title and author name",
+    noshort = true,
+    default = Some(false)
+  )
+
   val removeWarnings = opt[Boolean](
     descr = "Remove warnings about reporting story if found on Amazon",
     noshort = true,

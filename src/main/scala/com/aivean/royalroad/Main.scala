@@ -17,6 +17,7 @@ import scala.util.{Failure, Success, Try}
 object Main extends App {
 
   print ("Royalroad downloader v" + VersionInfo.version + "\n")
+  val cliArgs = new Args(args)
 
   def handleFromArg[T](chaps: Seq[T], fromChap: Int): Seq[T] =
     if (fromChap > 0) chaps.drop(fromChap - 1) else if (fromChap < 0) chaps.takeRight(-fromChap) else chaps
@@ -29,7 +30,10 @@ object Main extends App {
     }
   }
 
-  val cliArgs = new Args(args)
+  def embedImageIfNeeded(url: String): Try[String] =
+    if (cliArgs.embedImages()) {
+      Try(new URL(url)).flatMap(url => Try(retry(getDataURIForURL(url)))).map(_.toString)
+    } else Success(url)
 
   import DSL.Extract._
   import DSL._
@@ -97,6 +101,48 @@ object Main extends App {
   try {
     printWriter.write(s"""<html><head><meta charset="UTF-8"><title>$title</title></head><body>""")
 
+    if (cliArgs.includeTitlePage()) try {
+      // include header with title, author, description and cover image
+      val authorName = doc >> text("h4 > span > a")
+      val authorProfilePic = doc >> attr("src")("div.avatar-container-general > img")
+      val fictionDescription = doc >> text("div.description")
+      val fictionImage = doc >> attr("src")("div.cover-art-container > img")
+      val fictionLink = extractFictionLink(cliArgs.fictionLink()) // get the fiction page link
+      // get the current date and time
+
+      println("Author: " + authorName)
+      println("Author Profile Picture: " + authorProfilePic)
+      println("Description: " + fictionDescription)
+      println("Image: " + fictionImage)
+      println("Fiction Link: " + fictionLink)
+
+      def embedIfNeededSilently(url: String) = embedImageIfNeeded(url).getOrElse(url)
+
+      printWriter.write(
+        <div class="title-page">
+          <h1 class="title">
+            <a href={fictionLink}>
+              {title}
+            </a>
+          </h1> <!-- link back to the fiction page -->
+          <img class="fiction-image" src={embedIfNeededSilently(fictionImage)}/>
+          <h2>by
+            {authorName}<img class="author-profile-pic" src={embedIfNeededSilently(authorProfilePic)}/>
+          </h2>
+          <p class="description">
+            {fictionDescription}
+          </p>
+          <p class="scraping-time">Scraped at:
+            {new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date())}
+          </p> <!-- display the scraping date and time -->
+        </div>.toString()
+      )
+    } catch {
+      case e: Exception =>
+        println("Failed to include title page: " + e.getMessage)
+        e.printStackTrace()
+    }
+
     // process the queue until the end message None is received
     Stream.continually(chapQ.take())
       .takeWhile(_.isDefined)
@@ -123,15 +169,12 @@ object Main extends App {
             case img: JsoupElement if img.hasAttr("src") =>
               val imgUrl = img.attr("src")
               println("embedding image: " + imgUrl)
-              Try(new URL(imgUrl)) match {
-                case Success(url) =>
-                  Try(retry(getDataURIForURL(url))) match {
-                    case Success(dataUrl) => img.underlying.attr("src", dataUrl.toString)
-                    case Failure(e) =>
-                      println(s"Failed to convert $imgUrl to data URL")
-                      e.printStackTrace()
-                  }
-                case Failure(_) => println(s"Invalid URL: $imgUrl")
+
+              embedImageIfNeeded(imgUrl) match {
+                case Success(dataUrl) => img.underlying.attr("src", dataUrl)
+                case Failure(e) =>
+                  println(s"Failed to convert $imgUrl to data URL")
+                  e.printStackTrace()
               }
             case img: JsoupElement => println(s"Warning: image without src attribute: ${img.outerHtml} in $url")
           }

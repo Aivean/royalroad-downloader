@@ -4,6 +4,8 @@ import java.io.{BufferedInputStream, ByteArrayOutputStream, IOException}
 import java.net._
 import java.util.Base64
 import java.util.concurrent.atomic.AtomicLong
+import javax.net.ssl.SSLContext
+import javax.security.cert.X509Certificate
 import scala.util.{Failure, Success, Try}
 
 
@@ -157,4 +159,23 @@ object Utils {
       dir.mkdirs()
     }
   }
+
+  def disableSSL(): Unit = {
+    import java.security.cert.X509Certificate
+    import javax.net.ssl.{SSLContext, TrustManager, X509TrustManager}
+    import javax.net.ssl.HttpsURLConnection
+
+    val trustAllCerts: Array[TrustManager] = Array[TrustManager](new X509TrustManager() {
+      def getAcceptedIssuers: Array[X509Certificate] = null
+
+      def checkClientTrusted(certs: Array[X509Certificate], authType: String): Unit = {}
+
+      def checkServerTrusted(certs: Array[X509Certificate], authType: String): Unit = {}
+    })
+
+    val sc: SSLContext = SSLContext.getInstance("SSL")
+    sc.init(null, trustAllCerts, new java.security.SecureRandom)
+    HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory)
+  }
+
 }
