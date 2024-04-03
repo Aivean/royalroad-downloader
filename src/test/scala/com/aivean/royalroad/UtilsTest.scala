@@ -34,7 +34,12 @@ class UtilsTest extends FunSuite {
     "Royal Road's content has been misappropriated; report any instances of this story if found elsewhere.",
     "The story has been taken without consent; if you see it on Amazon, report the incident.",
     "Stolen novel; please report.",
-    "Stolen content alert: this content belongs on Royal Road. Report any occurrences."
+    "Stolen content alert: this content belongs on Royal Road. Report any occurrences.",
+    "This content has been unlawfully taken from Royal Road; report any instances of this story if found elsewhere.",
+    "This tale has been unlawfully lifted from Royal Road; report any instances of this story if found elsewhere.",
+    "This story has been taken without authorization. Report any sightings.",
+    "This tale has been unlawfully lifted without the author's consent. Report any appearances on Amazon.",
+    "This story has been unlawfully obtained without the author's consent. Report any appearances on Amazon."
   )
 
   test("amazonRegex") {
