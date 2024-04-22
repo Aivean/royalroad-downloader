@@ -15,6 +15,12 @@ class UtilsTest extends FunSuite {
       new URI("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAAEUlEQVR4nGP8z4ACmBgo4wMAUJEBCfBOwRcAAAAASUVORK5CYII="))
   }
 
+  // test url to data uri conversion
+  test("urlToDataUriImgur") {
+    val url = new URL("https://i.imgur.com/kp112Ad.png")
+    val dataUri = Utils.getDataURIForURL(url)
+    assert(dataUri.toString.startsWith("data:image/png;base64,"))
+  }
 
   val reportWarnings = List(
     "A case of theft: this story is not rightfully on Amazon; if you spot it, report the violation.",
@@ -46,6 +52,13 @@ class UtilsTest extends FunSuite {
     reportWarnings.foreach { w =>
       assert(Utils.WarningFuzzyMatcher(w), "Warning: " + w + " should match amazonRegex\n"+
       s"score: ${Utils.WarningFuzzyMatcher.scoreString(w)} > ${Utils.WarningFuzzyMatcher.threshold}")
+    }
+  }
+
+  test("amazonRegex2") {
+    reportWarnings.foreach { w =>
+      println(w +
+      s" score: ${Utils.WarningFuzzyMatcher.scoreString(w)} > ${Utils.WarningFuzzyMatcher.threshold}")
     }
   }
 

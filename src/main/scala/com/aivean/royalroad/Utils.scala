@@ -119,32 +119,39 @@ object Utils {
     }
   }
 
-  def getDataURIForURL(url: URL): URI = withResource(url.openStream()) { is =>
-    val bis = new BufferedInputStream(is)
-    val contentType = URLConnection.guessContentTypeFromStream(bis) match {
-      case null => // try to guess from url
-        val ext = url.toString.split('.').lastOption
-        ext match {
-          case Some("jpg") => "image/jpeg"
-          case Some("png") => "image/png"
-          case Some("gif") => "image/gif"
-          case _ => null
-        }
-      case x => x
-    }
+  def getDataURIForURL(url: URL): URI = {
+    val connection = url.openConnection().asInstanceOf[HttpURLConnection]
+    connection.setRequestProperty("User-Agent", "curl/8.4.0")
+    connection.setRequestProperty("Host", url.getHost)
+    connection.setRequestProperty("Accept", "*/*")
 
-    if (contentType != null) {
-      withResource(new ByteArrayOutputStream()) { os =>
-        val chunk = new Array[Byte](4096)
-        Stream.continually(bis.read(chunk))
-          .takeWhile(_ > 0)
-          .foreach(readBytes => os.write(chunk, 0, readBytes))
-        os.flush()
-        new URI("data:" + contentType + ";base64," +
-          Base64.getEncoder.encodeToString(os.toByteArray))
+    withResource(connection.getInputStream) { is =>
+      val bis = new BufferedInputStream(is)
+      val contentType = URLConnection.guessContentTypeFromStream(bis) match {
+        case null => // try to guess from url
+          val ext = url.toString.split('.').lastOption
+          ext match {
+            case Some("jpg") => "image/jpeg"
+            case Some("png") => "image/png"
+            case Some("gif") => "image/gif"
+            case _ => null
+          }
+        case x => x
       }
-    } else {
-      throw new IOException("could not get content type from " + url.toExternalForm)
+
+      if (contentType != null) {
+        withResource(new ByteArrayOutputStream()) { os =>
+          val chunk = new Array[Byte](4096)
+          Stream.continually(bis.read(chunk))
+            .takeWhile(_ > 0)
+            .foreach(readBytes => os.write(chunk, 0, readBytes))
+          os.flush()
+          new URI("data:" + contentType + ";base64," +
+            Base64.getEncoder.encodeToString(os.toByteArray))
+        }
+      } else {
+        throw new IOException("could not get content type from " + url.toExternalForm)
+      }
     }
   }
 
