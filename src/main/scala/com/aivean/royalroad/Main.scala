@@ -191,6 +191,17 @@ object Main extends App {
               println("removing warning: " + p.text)
               p.underlying.remove()
           }
+
+          // find all divs, since royal road put warnings in divs now as well
+          val warningDivs = chapterContent.select("div")
+          // find all warningDivs that contain the warning
+          val warningDivsParagraphs = warningDivs.filter(p => Utils.WarningFuzzyMatcher(p.text))
+          // remove all warning warningDivs
+          warningDivsParagraphs.collect {
+            case p: JsoupElement =>
+              println("removing warning: " + p.text)
+              p.underlying.remove()
+          }
         }
 
         // write chapter content to file
