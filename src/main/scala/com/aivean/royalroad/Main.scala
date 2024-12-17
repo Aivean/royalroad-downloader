@@ -181,23 +181,12 @@ object Main extends App {
         }
 
         if (cliArgs.removeWarnings()) {
-          // find all paragraphs
-          val paragraphs = chapterContent.select("p")
+          // find all paragraphs and divs, since Royal Road seems to put warnings in divs now.
+          val paragraphs = chapterContent.select("p,div")
           // find all paragraphs that contain the warning
           val warningParagraphs = paragraphs.filter(p => Utils.WarningFuzzyMatcher(p.text))
           // remove all warning paragraphs
           warningParagraphs.collect {
-            case p: JsoupElement =>
-              println("removing warning: " + p.text)
-              p.underlying.remove()
-          }
-
-          // find all divs, since royal road put warnings in divs now as well
-          val warningDivs = chapterContent.select("div")
-          // find all warningDivs that contain the warning
-          val warningDivsParagraphs = warningDivs.filter(p => Utils.WarningFuzzyMatcher(p.text))
-          // remove all warning warningDivs
-          warningDivsParagraphs.collect {
             case p: JsoupElement =>
               println("removing warning: " + p.text)
               p.underlying.remove()
