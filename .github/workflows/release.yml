@@ -23,7 +23,7 @@ jobs:
 
       - name: Build JAR
         run: |
-          sbt 'set version := "'"$PROJECT_VERSION"'"' assembly
+          sbt/sbt 'set version := "'"$PROJECT_VERSION"'"' assembly
           mv target/scala-2.11/*-assembly-*.jar royalroad-downloader.jar
 
       - name: Release
