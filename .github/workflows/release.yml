@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v*.*.*"
+  workflow_dispatch:
 
 jobs:
   build:
@@ -19,14 +20,20 @@ jobs:
           cache: 'sbt'
 
       - name: Extract version from tag
-        run: echo "PROJECT_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            echo "PROJECT_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+          else
+            echo "PROJECT_VERSION=dev-build" >> $GITHUB_ENV
+          fi
 
       - name: Build JAR
         run: |
-          sbt 'set version := "'"$PROJECT_VERSION"'"' assembly
+          sbt/sbt 'set version := "'"$PROJECT_VERSION"'"' assembly
           mv target/scala-2.11/*-assembly-*.jar royalroad-downloader.jar
 
       - name: Release
+        if: ${{ github.event_name != 'workflow_dispatch' }}
         uses: softprops/action-gh-release@v1
         with:
           files: royalroad-downloader.jar
