@@ -4,8 +4,7 @@ import java.io.{BufferedInputStream, ByteArrayOutputStream, IOException}
 import java.net._
 import java.util.Base64
 import java.util.concurrent.atomic.AtomicLong
-import javax.net.ssl.SSLContext
-import javax.security.cert.X509Certificate
+import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
 
 
@@ -14,116 +13,67 @@ import scala.util.{Failure, Success, Try}
  */
 object Utils {
 
-  object WarningFuzzyMatcher {
-    val keywords = Map(
-      "amazon" -> 1.0,
-      "stolen" -> 0.8,
-      "theft" -> 0.8,
-      "report" -> 0.7,
-      "please report" -> 0.61,
-      "read the official version" -> 0.8,
-      "support the" -> 0.7,
-      "without permission" -> 0.6,
-      "without author" -> 0.6,
-      "without the author" -> 0.6,
-      "without consent" -> 0.6,
-      "unauthorized" -> 0.6,
-      "pilfered" -> 0.5,
-      "pirated" -> 0.5,
-      "pirate" -> 0.5,
-      "lifted" -> 0.5,
-      "obtained" -> 0.5,
-      "taken" -> 0.5,
-      "purloined" -> 0.5,
-      "appropriated" -> 0.5,
-      "royal road" -> 0.9,
-      "story" -> 0.4,
-      "narrative" -> 0.4,
-      "content" -> 0.4,
-      "novel" -> 0.4,
-      "tale" -> 0.4,
-      "infringement" -> 0.5,
-      "unlawfully" -> 0.5,
-      "violation" -> 0.5,
-      "not rightfully" -> 0.5,
-      "taken without" -> 0.7,
-      "misappropriated" -> 0.6,
-      "sightings" -> 0.4,
-      "encounter" -> 0.3,
-      "original" -> 0.6,
-      "official" -> 0.6,
-      "authentic" -> 0.6,
-      "genuine" -> 0.6,
-      "elsewhere" -> 0.5,
-      "different site" -> 0.6,
-      "another platform" -> 0.6,
-      "another site" -> 0.6,
-      "other great novels" -> 0.4,
-      "creative writers" -> 0.5,
-      "author's preferred platform" -> 0.7,
-      "originally published" -> 0.7,
-      "true home" -> 0.5,
-      "ensure the author gets" -> 0.8,
-      "published on a different platform" -> 0.8,
-      "seeking out the original" -> 0.8,
-      "find the genuine version" -> 0.8,
-      "did you know" -> 0.4,
-      "favorite authors" -> 0.5,
-      "deserves support" -> 0.6,
-      "support creators" -> 0.7,
-      "read it there" -> 0.5,
-      "real experience" -> 0.5,
-      "posted elsewhere" -> 0.6,
-      "originates from" -> 0.6,
-      "help the author" -> 0.7,
-      "look for the official" -> 0.7,
-      "visit royal road" -> 0.8,
-      "discover and support" -> 0.7,
-      "ensure author gets credit" -> 0.8,
-      "support creativity" -> 0.7,
-      "enjoying this book" -> 0.5,
-      "seek out the original" -> 0.7,
-      "get the support they deserve" -> 0.7,
-      "reading their stories" -> 0.5,
-      "support the creativity" -> 0.7,
-      "by visiting" -> 0.3,
-      "can be found on" -> 0.5,
-      "check it out there" -> 0.6,
-      "find this and other great novels" -> 0.8,
-      "author's preferred platform" -> 0.8,
-      "support original creators" -> 0.8,
-      "help support creative writers" -> 0.8,
-      "read it on royal road" -> 0.9,
-      "ensure the author gets credit" -> 0.9,
-      "searching for the original publication" -> 0.8,
-      "book's true home" -> 0.7,
-      "novel's true home" -> 0.7,
-      "posted elsewhere by the author" -> 0.9,
-      "reading the authentic version" -> 0.8,
-      "story originates from" -> 0.8,
-      "different website" -> 0.6,
-      "reading it there" -> 0.6,
-      "support creative writers" -> 0.8,
-      "finding and reading their stories" -> 0.8,
-      "on the original site" -> 0.7,
-      "support the author" -> 0.8,
-      "searching for the original" -> 0.8,
-      "original publication" -> 0.7,
-      "true home is a different platform" -> 0.9,
-      "support the author by finding it" -> 0.9
-    )
+  trait ElementMatcher {
+    def matches(element: net.ruippeixotog.scalascraper.model.Element): Boolean
+  }
 
-    val threshold = 2.5
-
-    def scoreString(s: String): Double = {
-      keywords.foldLeft(0.0) {
-        case (score, (keyword, value)) =>
-          if (s.toLowerCase.contains(keyword)) score + value else score
-      }
+  object HiddenClassMatcher {
+    def fromDocument(doc: net.ruippeixotog.scalascraper.model.Document): HiddenClassMatcher = {
+      val hiddenClasses = extractHiddenClassNames(doc)
+      new HiddenClassMatcher(hiddenClasses)
     }
 
-    def apply(warning: String): Boolean = warning.length < 200 && scoreString(warning) > threshold
+    // This is a direct regex approach to find classes in style tags with display:none
+    val cssPattern: Regex = """\.([\w_-]+)\s*\{[^}]*display\s*:\s*none[^}]*}""".r
+
+    def fromClassNames(classNames: Set[String]): HiddenClassMatcher = {
+      new HiddenClassMatcher(classNames)
+    }
+
+    def extractHiddenClassNames(doc: net.ruippeixotog.scalascraper.model.Document): Set[String] = {
+      import net.ruippeixotog.scalascraper.browser.JsoupBrowser.JsoupElement
+      import net.ruippeixotog.scalascraper.dsl.DSL._
+      import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
+
+      // Get the entire HTML as a string for reliable regex parsing
+      val htmlContent = doc.toString
+
+      // Find all matches of our pattern in the entire HTML content
+      val matches = cssPattern.findAllMatchIn(htmlContent).map(_.group(1)).toSet
+
+      // Also try to find style elements specifically
+      val styleElements = doc >?> elementList("style") getOrElse Nil
+      val styleResult = styleElements.flatMap { styleElement =>
+        val styleContent = styleElement.text
+        cssPattern.findAllMatchIn(styleContent).map(_.group(1)).toSet
+      }.toSet
+
+      // Also check for inline styles with display:none in the document's head
+      val headContent = doc >?> text("head") getOrElse ""
+      val headMatches = cssPattern.findAllMatchIn(headContent).map(_.group(1)).toSet
+
+      // Combine all results
+      val allMatches = matches ++ styleResult ++ headMatches
+
+      allMatches
+    }
   }
+
+  class HiddenClassMatcher(hiddenClassNames: Set[String]) extends ElementMatcher {
+    def matches(element: net.ruippeixotog.scalascraper.model.Element): Boolean = {
+      import org.jsoup.nodes.Element
+      val jsoupElement = element.asInstanceOf[net.ruippeixotog.scalascraper.browser.JsoupBrowser.JsoupElement]
+      val classAttr = jsoupElement.underlying.attr("class")
+
+      if (classAttr.isEmpty) false
+      else {
+        val classes = classAttr.split("\\s+").toSet
+        classes.exists(hiddenClassNames.contains)
+      }
+    }
+  }
+
+
 
   def parsingError(name: String, value: String, url: String): Nothing = {
     throw new IllegalStateException(
