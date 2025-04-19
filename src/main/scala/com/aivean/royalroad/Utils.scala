@@ -110,6 +110,8 @@ object Utils {
       "searching for the original" -> 0.8,
       "original publication" -> 0.7,
       "true home is a different platform" -> 0.9,
+      "Check it out there for the real experience" -> 0.7,
+      "originally published on Royal Road" -> 1.0,
       "support the author by finding it" -> 0.9
     )
 
