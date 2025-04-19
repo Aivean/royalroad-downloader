@@ -18,4 +18,4 @@ jobs:
           cache: 'sbt'
 
       - name: Build and Test
-        run: sbt clean test
+        run: sbt/sbt clean test
