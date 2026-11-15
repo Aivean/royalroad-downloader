@@ -1,6 +1,14 @@
 [Royal Road](http://royalroad.com/) book downloader
 ---
 
+> [!WARNING]
+> **This project is archived and no longer works.**
+> Royal Road is now behind a Cloudflare challenge that rejects requests from this tool with `403`.
+> The challenge can be bypassed, because it checks the client's TLS/HTTP2 fingerprint and doesn't require running JavaScript.
+> Tools that imitate Chrome's fingerprint (e.g. [curl_cffi](https://github.com/lexiforest/curl_cffi) or curl-impersonate) still get through.
+> The JVM stack this tool is built on can't do that, though, and the project (Scala 2.11, Jsoup) is too outdated
+> to be worth reworking. The code stays here for reference.
+
 A simple command line tool that downloads fiction from [Royal Road](http://royalroad.com/)
 as html. Use [Calibre](http://calibre-ebook.com/) to convert html to any desired format.
 
