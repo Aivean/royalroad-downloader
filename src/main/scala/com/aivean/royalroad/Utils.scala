@@ -4,6 +4,11 @@ import java.io.{BufferedInputStream, ByteArrayOutputStream, IOException}
 import java.net._
 import java.util.Base64
 import java.util.concurrent.atomic.AtomicLong
+
+import net.ruippeixotog.scalascraper.browser.JsoupBrowser.JsoupElement
+import net.ruippeixotog.scalascraper.model.{Document, Element}
+
+import scala.collection.JavaConverters._
 import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
 
@@ -14,62 +19,43 @@ import scala.util.{Failure, Success, Try}
 object Utils {
 
   trait ElementMatcher {
-    def matches(element: net.ruippeixotog.scalascraper.model.Element): Boolean
+    def matches(element: Element): Boolean
   }
 
   object HiddenClassMatcher {
-    def fromDocument(doc: net.ruippeixotog.scalascraper.model.Document): HiddenClassMatcher = {
-      val hiddenClasses = extractHiddenClassNames(doc)
-      new HiddenClassMatcher(hiddenClasses)
-    }
 
-    // This is a direct regex approach to find classes in style tags with display:none
+    /** CSS rule of a class selector that contains `display: none`; group 1 is the class name. */
     val cssPattern: Regex = """\.([\w_-]+)\s*\{[^}]*display\s*:\s*none[^}]*}""".r
 
-    def fromClassNames(classNames: Set[String]): HiddenClassMatcher = {
-      new HiddenClassMatcher(classNames)
-    }
+    def fromDocument(doc: Document): HiddenClassMatcher =
+      new HiddenClassMatcher(extractHiddenClassNames(doc))
 
-    def extractHiddenClassNames(doc: net.ruippeixotog.scalascraper.model.Document): Set[String] = {
-      import net.ruippeixotog.scalascraper.browser.JsoupBrowser.JsoupElement
+    def fromClassNames(classNames: Set[String]): HiddenClassMatcher =
+      new HiddenClassMatcher(classNames)
+
+    /** Names of all classes hidden with `display: none` in the given CSS/HTML text. */
+    def findHiddenClasses(css: String): Set[String] =
+      cssPattern.findAllMatchIn(css).map(_.group(1)).toSet
+
+    /**
+     * Collects hidden class names from the whole HTML, from `<style>` elements and from `<head>` text.
+     */
+    def extractHiddenClassNames(doc: Document): Set[String] = {
       import net.ruippeixotog.scalascraper.dsl.DSL._
       import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 
-      // Get the entire HTML as a string for reliable regex parsing
-      val htmlContent = doc.toString
+      val styleTexts = (doc >?> elementList("style")).getOrElse(Nil).map(_.text)
+      val headText = doc >?> text("head")
+      val sources = doc.toString +: (styleTexts ++ headText)
 
-      // Find all matches of our pattern in the entire HTML content
-      val matches = cssPattern.findAllMatchIn(htmlContent).map(_.group(1)).toSet
-
-      // Also try to find style elements specifically
-      val styleElements = doc >?> elementList("style") getOrElse Nil
-      val styleResult = styleElements.flatMap { styleElement =>
-        val styleContent = styleElement.text
-        cssPattern.findAllMatchIn(styleContent).map(_.group(1)).toSet
-      }.toSet
-
-      // Also check for inline styles with display:none in the document's head
-      val headContent = doc >?> text("head") getOrElse ""
-      val headMatches = cssPattern.findAllMatchIn(headContent).map(_.group(1)).toSet
-
-      // Combine all results
-      val allMatches = matches ++ styleResult ++ headMatches
-
-      allMatches
+      sources.flatMap(findHiddenClasses).toSet
     }
   }
 
   class HiddenClassMatcher(hiddenClassNames: Set[String]) extends ElementMatcher {
-    def matches(element: net.ruippeixotog.scalascraper.model.Element): Boolean = {
-      import org.jsoup.nodes.Element
-      val jsoupElement = element.asInstanceOf[net.ruippeixotog.scalascraper.browser.JsoupBrowser.JsoupElement]
-      val classAttr = jsoupElement.underlying.attr("class")
-
-      if (classAttr.isEmpty) false
-      else {
-        val classes = classAttr.split("\\s+").toSet
-        classes.exists(hiddenClassNames.contains)
-      }
+    def matches(element: Element): Boolean = element match {
+      case e: JsoupElement => e.underlying.classNames().asScala.exists(hiddenClassNames.contains)
+      case _ => false
     }
   }
 

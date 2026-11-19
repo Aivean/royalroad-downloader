@@ -51,13 +51,8 @@ object Main extends App {
 
   println("Title: " + title)
 
-  val threads: Seq[String] =
-    (doc >> attrs("href")("#chapters a[href^=/fiction/][href*=/chapter/]")).toList.distinct
-
-  val chapUrls = threads.collect {
-    case x if x.startsWith("/") => "https://www.royalroad.com" + x
-    case x => x
-  }
+  val chapUrls: Seq[String] =
+    Fiction.chapterUrls(doc >> attrs("href")("#chapters a[href^=/fiction/][href*=/chapter/]"))
 
   val chapUrlsConstrained = handleFromArg(chapUrls, cliArgs.fromChapter())
   if (chapUrlsConstrained.isEmpty) {
@@ -78,21 +73,12 @@ object Main extends App {
     chapQ.put(None)
   }
 
-  val filename = renderTemplate(cliArgs.output(), Map(
-    "title" -> fileNameSafe(title.stripSuffix(" | Royal Road")),
-    "chapters" -> {
-      // when chapter range is specified, add it to the filename
-      if (chapUrls.size != chapUrlsConstrained.size) {
-        val firstChapter = chapUrls.indexOf(chapUrlsConstrained.head)
-        val lastChapter = chapUrls.indexOf(chapUrlsConstrained.last)
-        if (firstChapter == lastChapter) "chapter_" + (firstChapter + 1) else
-          "chapters_" + (firstChapter + 1) + "-" + (lastChapter + 1)
-      } else ""
-    },
-    "today" -> {
-      new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date())
-    }
-  ))
+  val filename = Fiction.outputFileName(
+    template = cliArgs.output(),
+    pageTitle = title,
+    chaptersLabel = Fiction.chaptersLabel(chapUrls, chapUrlsConstrained),
+    today = new java.util.Date()
+  )
 
   println("Saving as: " + filename)
 
